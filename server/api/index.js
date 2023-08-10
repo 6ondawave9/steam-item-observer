@@ -7,7 +7,6 @@ app.use(bodyParser.json())
 app.use(cors())
 app.listen(process.env.PORT || config.port,
   () => console.log(`Server started on port ${config.port}`))
-  mongoClient.connect()
 
 app.get('/', async (req, res)=> {
   const TelegramBot = require('node-telegram-bot-api')
