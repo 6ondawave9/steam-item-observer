@@ -226,3 +226,5 @@ async function getActualPrice(name, quality) {
     return undefined
   }
 }
+
+module.exports = app
