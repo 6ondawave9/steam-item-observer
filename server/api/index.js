@@ -12,7 +12,7 @@ app.listen(process.env.PORT || config.port,
   mongoClient.connect()
   const collection = mongoClient.db(config.dbName).collection(config.collectionName)
 
-app.get('/'), async (req, res)=> {
+app.get('/test'), async (req, res)=> {
   res.send('App is kinda working')
 }
 
