@@ -35,7 +35,11 @@ app.get('/createUser', async(req, res) => {
 })
 
 app.post('/login', async(req, res) => {
-  let code = req.body.code
+  let code = req.body.code.replace(/[^+\d]/g, '')
+  if (!code.length) {
+    res.send(false)
+    return
+  }
   let results = await pool.query(`SELECT * FROM users WHERE Ucode = ${code} AND Tgid != 0`)
   results = results.rows
   if (results.length) {
@@ -78,13 +82,13 @@ app.post('/cahngeSettings', async(req, res) => {
   let quality = req.body.quality
   
   let results = await pool.query(`SELECT * FROM users WHERE Ucode = ${user.code} AND Tgtoken = ${+user.tgToken}`)
-  results = JSON.parse(results.rows)
+  results = JSON.parse(results.rows[0].items)
   for (let i = 0; i < results.length; i++) {
     if (results[i].name == name && results[i].quality == quality) {
       results[i][type] = value
 
       results = JSON.stringify(results)
-      await pool.query(`UPDATE users SET items = ${results} WHERE Ucode = ${user.code} AND Tgtoken = ${+user.tgToken}`)
+      await pool.query(`UPDATE users SET Items = '${results}' WHERE Ucode = ${user.code} AND Tgtoken = ${+user.tgToken}`)
 
       res.sendStatus(200)
 
@@ -98,13 +102,13 @@ app.post('/deleteItem', async(req, res)=>{
   let quality = req.body.quality
   let user = req.body.user
   let results = await pool.query(`SELECT * FROM users WHERE Ucode = ${user.code} AND Tgtoken = ${+user.tgToken}`)
-  results = JSON.parse(results.rows)
+  results = JSON.parse(results.rows[0].items)
   for (let i = 0; i < results.length; i++) {
     if (results[i].name == name && results[i].quality == quality) {
       results.splice(i ,1)
 
       results = JSON.stringify(results)
-      await pool.query(`UPDATE users SET items = ${results} WHERE Ucode = ${user.code} AND Tgtoken = ${+user.tgToken}`)
+      await pool.query(`UPDATE users SET Items = '${results}' WHERE Ucode = ${user.code} AND Tgtoken = ${+user.tgToken}`)
 
       res.sendStatus(200)
 
@@ -119,20 +123,29 @@ app.post('/addItem', async(req, res)=>{
   let user = req.body.user
 
   let results = await pool.query(`SELECT * FROM users WHERE Ucode = ${user.code} AND Tgtoken = ${+user.tgToken}`)
-  results = JSON.parse(results.rows)
-  for (let i = 0; i < results.length; i++) {
-    if (results[i].name == name && results[i].quality == quality) {
-      res.send(false)
-    } else {
-      const img = await getImg(name, quality)
-      const actualPrice = await getActualPrice(name, quality)
-      results.push({name: name, quality: quality, notifications: true, sendEqual: true, sendDifInCur: true, sendDifInPer: false, 
-      actualPrice: actualPrice, lastPrice: 0, img: img,})
-
-      results = JSON.stringify(results)
-      await pool.query(`UPDATE users SET items = ${results} WHERE Ucode = ${user.code} AND Tgtoken = ${+user.tgToken}`)
-      res.send(true)
+  results = JSON.parse(results.rows[0].items)
+  if (results.length) {
+    for (let i = 0; i < results.length; i++) {
+      if (results[i].name == name && results[i].quality == quality) {
+        res.send(false)
+        return
+      }
     }
+    const img = await getImg(name, quality)
+    const actualPrice = await getActualPrice(name, quality)
+    results.push({name: name, quality: quality, notifications: true, sendEqual: true, sendDifInCur: true, sendDifInPer: false, 
+    actualPrice: actualPrice, lastPrice: 0, img: img,})
+    results = JSON.stringify(results)
+    await pool.query(`UPDATE users SET Items = '${results}' WHERE Ucode = ${user.code} AND Tgtoken = ${+user.tgToken}`)
+    res.send(true)
+  } else {
+    const img = await getImg(name, quality)
+    const actualPrice = await getActualPrice(name, quality)
+    results.push({name: name, quality: quality, notifications: true, sendEqual: true, sendDifInCur: true, sendDifInPer: false, 
+    actualPrice: actualPrice, lastPrice: 0, img: img,})
+    results = JSON.stringify(results)
+    await pool.query(`UPDATE users SET Items = '${results}' WHERE Ucode = ${user.code} AND Tgtoken = ${+user.tgToken}`)
+    res.send(true)
   }
 })
 
@@ -149,9 +162,9 @@ const bot = new TelegramBot(token, { polling: true })
 async function updateItemsInfoAndSendMes() {//возможно имеет смысл пересмотреть логику и слать не "всем сразу"
   
   let results = await pool.query(`SELECT * FROM users WHERE Tgid != 0 AND Items != '[]'`)
-  results = JSON.parse(results.rows)
+  results = results.rows
   results.forEach(async user=>{
-    let items = user.items
+    let items = JSON.parse(user.items)
     let mesToSend = ''
     counter = 0
     for (let i = 0; i < items.length; i++) { //есть ли смысл делать опрос предметов по которым нет нотификации???
@@ -164,11 +177,11 @@ async function updateItemsInfoAndSendMes() {//возможно имеет смы
       items[i].lastPrice = items[i].actualPrice
       items[i].actualPrice = newPrice
 
-      pool.query(`UPDATE users SET Items = ${items} WHERE Ucode = ${user.Ucode}`)
+      pool.query(`UPDATE users SET Items = '${JSON.stringify(items)}' WHERE Ucode = ${user.ucode}`)
 
       mesToSend+=oneMes(items[i], quality)
       if (counter == items.length && mesToSend) {
-          bot.sendMessage(user.tgId, mesToSend)
+          bot.sendMessage(user.tgid, mesToSend)
       }
     }
   })
@@ -194,7 +207,8 @@ function oneMes(item, quality) {
 
 async function tgValidate(code) {
   let tgToken = randomInt()
-  const result = await pool.query(`SELECT * FROM users WHERE Ucode = ${code}`)
+  let result = await pool.query(`SELECT * FROM users WHERE Ucode = ${code}`)
+  result = result.rows
   let chatId = result[0].tgid
   await pool.query(`UPDATE users SET Tgtoken = ${tgToken} WHERE Ucode = ${code}`)
   bot.sendMessage(chatId, `<code>${tgToken}</code>`, {parse_mode: 'HTML'})
