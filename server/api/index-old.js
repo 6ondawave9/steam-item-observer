@@ -112,7 +112,7 @@ app.get('/sendTest', async(req, res) => {
 
 //Bot
 const TelegramBot = require('node-telegram-bot-api')
-const token = '2122949039:AAF3nM-32LTJSwqBvKUbddt8LMOjWooYWK8'
+const token = '***'
 const bot = new TelegramBot(token, { polling: true })
 
 async function updateItemsInfoAndSendMes() {//возможно имеет смысл пересмотреть логику и слать не "всем сразу"
