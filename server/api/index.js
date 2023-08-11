@@ -43,7 +43,7 @@ app.post('/login', async(req, res) => {
   let results = await pool.query(`SELECT * FROM users WHERE Ucode = ${code} AND Tgid != 0`)
   results = results.rows
   if (results.length) {
-    tgValidate(code)
+    await tgValidate(code)
     res.send(true)
   } else {
     res.send(false)
