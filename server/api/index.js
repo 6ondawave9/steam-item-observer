@@ -262,7 +262,7 @@ async function getImg(name, quality) {
     else {return response.data.icon}
   } catch (e) {
     // console.log(`\x1b[33mGetImgError: item (${name})\x1b[0m`)
-    console.log(e)
+    console.log(e.response.data)
     return undefined
   }
 }
