@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Dev -->
-    <!-- <button @click="test()">Send notification</button> -->
+    <button @click="test()">Send notification</button>
     <!---->
     <button @click="exit()">Exit</button>
     <button @click="addItem(newItemName, newItemQuality)">Add</button>
