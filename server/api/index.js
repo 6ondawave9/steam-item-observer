@@ -256,6 +256,8 @@ function randomInt(min = 10_000, max = 99_999) {
 async function getImg(name, quality) {
   let url = 'https://csgobackpack.net/api/GetItemPrice/?currency=RUB&id='+encodeURI(`${name}${quality?' ('+quality+')':''}`)+'&time=7&icon=1'
   const axios = require('axios');
+  let response = await axios.get(url)
+  console.log(response)
   try {
     let response = await axios.get(url)
     console.log(response)
