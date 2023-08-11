@@ -11,7 +11,7 @@ app.listen(process.env.PORT || config.port,
 const Pool = require('pg').Pool
 const pool = new Pool({
   user: 'default',
-  password: 'LEC4Ic7hPWRJ',
+  password: '***',
   host: 'ep-cold-haze-44988210-pooler.eu-central-1.postgres.vercel-storage.com',
   port: 5432,
   database: 'verceldb',
@@ -156,7 +156,7 @@ app.get('/sendTest', async(req, res) => {
 
 //Bot
 const TelegramBot = require('node-telegram-bot-api')
-const token = '2122949039:AAF3nM-32LTJSwqBvKUbddt8LMOjWooYWK8'
+const token = '***'
 const bot = new TelegramBot(token, { polling: true })
 
 async function updateItemsInfoAndSendMes() {//возможно имеет смысл пересмотреть логику и слать не "всем сразу"
