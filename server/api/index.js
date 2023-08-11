@@ -258,11 +258,11 @@ async function getImg(name, quality) {
   const axios = require('axios');
   try {
     let response = await axios.get(url)
+    console.log(response)
     if (response.data.success == 'false') {throw new Error}
     else {return response.data.icon}
   } catch (e) {
-    // console.log(`\x1b[33mGetImgError: item (${name})\x1b[0m`)
-    console.log(url)
+    console.log(`\x1b[33mGetImgError: item (${name})\x1b[0m`)
     return undefined
   }
 }
