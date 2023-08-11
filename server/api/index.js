@@ -173,8 +173,8 @@ async function updateItemsInfoAndSendMes() {//возможно имеет смы
     }
   })
 }
-updateItemsInfoAndSendMes()
-setInterval(updateItemsInfoAndSendMes, config.updateTime)
+// updateItemsInfoAndSendMes()
+// setInterval(updateItemsInfoAndSendMes, config.updateTime)
 
 function oneMes(item, quality) {
   if (item.notifications) {
